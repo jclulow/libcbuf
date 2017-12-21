@@ -361,6 +361,21 @@ cbuf_put_u64(cbuf_t *cbuf, uint64_t val)
 }
 
 int
+cbuf_get_u8(cbuf_t *cbuf, uint8_t *val)
+{
+	if (cbuf_available(cbuf) < 1) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	*val = cbuf->cbuf_data[cbuf->cbuf_position];
+	cbuf->cbuf_position++;
+	VERIFY3U(cbuf->cbuf_position, <=, cbuf->cbuf_limit);
+
+	return (0);
+}
+
+int
 cbuf_get_char(cbuf_t *cbuf, char *val)
 {
 	if (cbuf_available(cbuf) < 1) {
