@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <inttypes.h>
+#include <unistd.h>
 
 #include "libcbuf_impl.h"
 #include "libcbuf.h"
@@ -116,34 +117,71 @@ cbuf_byteorder_set(cbuf_t *cbuf, unsigned int order)
 	}
 }
 
-#if 0
 /*
  * Use read(2) to append data to a buffer.
  */
 int
-cbuf_sysread(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
+cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 {
 	ssize_t rsz;
+	size_t pos = cbuf_position(cbuf);
 
-	if (want == 0) {
-		return (EINVAL);
-	} else if (want > cbuf_avail(cbuf)) {
+	if (want == CBUF_SYSREAD_ENTIRE) {
+		if ((want = cbuf_available(cbuf)) == 0) {
+			errno = ENOSPC;
+			return (-1);
+		}
+	} else if (want == 0) {
+		errno = EINVAL;
+		return (-1);
+	} else if (want > cbuf_available(cbuf)) {
 		errno = ENOSPC;
 		return (-1);
 	}
 
-	if ((rsz = read(fd, &cbuf->cbuf_data[cbuf->cbuf_wpos], want)) < 0) {
+	if ((rsz = read(fd, &cbuf->cbuf_data[pos], want)) < 0) {
 		return (-1);
 	}
+	VERIFY0(cbuf_position_set(cbuf, pos + rsz));
 
-	cbuf->cbuf_wpos += rsz;
 	if (actual != NULL) {
 		*actual = (size_t)rsz;
 	}
-
 	return (0);
 }
-#endif
+
+/*
+ * Use write(2) to consume data from the buffer.
+ */
+int
+cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
+{
+	ssize_t wsz;
+	size_t pos = cbuf_position(cbuf);
+
+	if (want == CBUF_SYSREAD_ENTIRE) {
+		if ((want = cbuf_available(cbuf)) == 0) {
+			errno = ENOSPC;
+			return (-1);
+		}
+	} else if (want == 0) {
+		errno = EINVAL;
+		return (-1);
+	} else if (want > cbuf_available(cbuf)) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	if ((wsz = write(fd, &cbuf->cbuf_data[pos], want)) < 0) {
+		return (-1);
+	}
+	VERIFY0(cbuf_position_set(cbuf, pos + wsz));
+
+	if (actual != NULL) {
+		*actual = (size_t)wsz;
+	}
+	return (0);
+}
 
 size_t
 cbuf_capacity(cbuf_t *cbuf)
@@ -241,8 +279,9 @@ cbuf_compact(cbuf_t *cbuf)
 	}
 
 	memmove(&cbuf->cbuf_data[0], &cbuf->cbuf_data[start], copysz);
-	cbuf->cbuf_position -= copysz;
-	cbuf->cbuf_limit -= copysz;
+	cbuf->cbuf_position = 0;
+	VERIFY3U(cbuf->cbuf_limit, >=, start);
+	cbuf->cbuf_limit -= start;
 }
 
 /*
@@ -319,6 +358,21 @@ cbuf_put_u64(cbuf_t *cbuf, uint64_t val)
 	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htonll(val) : val;
 
 	CBUF_APPEND_COMMON(cbuf, val);
+}
+
+int
+cbuf_get_char(cbuf_t *cbuf, char *val)
+{
+	if (cbuf_available(cbuf) < 1) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	*val = cbuf->cbuf_data[cbuf->cbuf_position];
+	cbuf->cbuf_position++;
+	VERIFY3U(cbuf->cbuf_position, <=, cbuf->cbuf_limit);
+
+	return (0);
 }
 
 #if 0

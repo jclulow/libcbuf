@@ -87,9 +87,8 @@ cbufq_deq_common(cbufq_t *cbufq, int remove)
 	}
 
 	VERIFY(cbufq->cbufq_count >= 1);
-	cbufq->cbufq_count--;
-
 	if (remove) {
+		cbufq->cbufq_count--;
 		head = list_remove_head(&cbufq->cbufq_bufs);
 	} else {
 		head = list_head(&cbufq->cbufq_bufs);
@@ -115,14 +114,32 @@ cbufq_peek(cbufq_t *cbufq)
 	return (cbufq_deq_common(cbufq, 0));
 }
 
+cbuf_t *
+cbufq_peek_tail(cbufq_t *cbufq)
+{
+	if (list_is_empty(&cbufq->cbufq_bufs)) {
+		VERIFY(cbufq->cbufq_count == 0);
+		return (NULL);
+	}
+
+	VERIFY(cbufq->cbufq_count >= 1);
+	cbuf_t *tail = list_tail(&cbufq->cbufq_bufs);
+	if (tail != NULL) {
+		cbuf_compact(tail);
+	}
+
+	return (tail);
+}
+
+
 size_t
 cbufq_available(cbufq_t *cbufq)
 {
-	size_t tots;
+	size_t tots = 0;
 	cbuf_t *cbuf;
 
 	for (cbuf = list_head(&cbufq->cbufq_bufs); cbuf != NULL;
-	    list_next(&cbufq->cbufq_bufs, cbuf)) {
+	    cbuf = list_next(&cbufq->cbufq_bufs, cbuf)) {
 		VERIFY0(cbuf_safe_add(&tots, tots, cbuf_available(cbuf)));
 	}
 

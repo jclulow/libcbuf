@@ -94,6 +94,7 @@ typedef enum cbuf_order {
 extern void cbuf_byteorder_set(cbuf_t *cbuf, unsigned int order);
 extern unsigned int cbuf_byteorder(cbuf_t *cbuf);
 
+extern int cbuf_get_char(cbuf_t *cbuf, char *val);
 extern int cbuf_get_u8(cbuf_t *cbuf, uint8_t *val);
 extern int cbuf_get_u16(cbuf_t *cbuf, uint16_t *val);
 extern int cbuf_get_u32(cbuf_t *cbuf, uint32_t *val);
@@ -123,8 +124,8 @@ extern int cbuf_get_ptr(cbuf_t *cbuf, size_t offset, size_t length, void **val);
 
 #define	CBUF_SYSREAD_ENTIRE		0
 
-extern int cbuf_sys_read(cbuf_t *cbuf, size_t want);
-extern int cbuf_sys_write(cbuf_t *cbuf);
+extern int cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
+extern int cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
 
 extern size_t cbuf_copy(cbuf_t *, cbuf_t *);
 
@@ -143,6 +144,7 @@ extern void cbufq_free(cbufq_t *);
 extern void cbufq_enq(cbufq_t *, cbuf_t *);
 extern cbuf_t *cbufq_deq(cbufq_t *);
 extern cbuf_t *cbufq_peek(cbufq_t *);
+extern cbuf_t *cbufq_peek_tail(cbufq_t *);
 
 extern size_t cbufq_available(cbufq_t *);
 extern size_t cbufq_count(cbufq_t *);
