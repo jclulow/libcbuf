@@ -453,28 +453,6 @@ cbuf_get_char(cbuf_t *cbuf, char *val)
 	return (0);
 }
 
-#if 0
-void *
-cbuf_read_ptr(cbuf_t *cbuf, size_t sz)
-{
-	size_t limit;
-
-	VERIFY(sz > 0);
-
-	if (cbuf_safe_add(&limit, cbuf_pos(cbuf, CBUF_POS_READ), sz) != 0) {
-		return (NULL);
-	}
-
-	if (limit < cbuf_pos(cbuf, CBUF_POS_END)) {
-	}
-
-	if (cbuf->cbuf_len < sz) {
-		errno = EIO;
-		return (NULL);
-	}
-}
-#endif
-
 void
 cbuf_dump(cbuf_t *cbuf, FILE *fp)
 {
