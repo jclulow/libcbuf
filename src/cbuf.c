@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <endian.h>
 
 #include "libcbuf_impl.h"
 #include "libcbuf.h"
@@ -434,6 +435,25 @@ cbuf_get_u8(cbuf_t *cbuf, uint8_t *val)
 	*val = cbuf->cbuf_data[cbuf->cbuf_position];
 	cbuf->cbuf_position++;
 	VERIFY3U(cbuf->cbuf_position, <=, cbuf->cbuf_limit);
+
+	return (0);
+}
+
+int
+cbuf_get_u32(cbuf_t *cbuf, uint32_t *val)
+{
+	if (cbuf_available(cbuf) < 4) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	uint32_t ival;
+	memcpy(&ival, &cbuf->cbuf_data[cbuf->cbuf_position], sizeof (*val));
+	cbuf->cbuf_position += 4;
+	VERIFY3U(cbuf->cbuf_position, <=, cbuf->cbuf_limit);
+
+	*val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? be32toh(ival) :
+	    le32toh(ival);
 
 	return (0);
 }
