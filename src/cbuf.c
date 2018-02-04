@@ -118,28 +118,37 @@ cbuf_byteorder_set(cbuf_t *cbuf, unsigned int order)
 	}
 }
 
+static int
+cbuf_sys_size_check(cbuf_t *cbuf, size_t *want)
+{
+	if (*want == CBUF_SYSREAD_ENTIRE) {
+		if ((*want = cbuf_available(cbuf)) == 0) {
+			errno = ENOSPC;
+			return (-1);
+		}
+	} else if (*want == 0) {
+		errno = EINVAL;
+		return (-1);
+	} else if (*want > cbuf_available(cbuf)) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	return (0);
+}
+
 /*
  * Use read(2) to append data to a buffer.
  */
 int
 cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 {
-	ssize_t rsz;
-	size_t pos = cbuf_position(cbuf);
-
-	if (want == CBUF_SYSREAD_ENTIRE) {
-		if ((want = cbuf_available(cbuf)) == 0) {
-			errno = ENOSPC;
-			return (-1);
-		}
-	} else if (want == 0) {
-		errno = EINVAL;
-		return (-1);
-	} else if (want > cbuf_available(cbuf)) {
-		errno = ENOSPC;
+	if (cbuf_sys_size_check(cbuf, &want) != 0) {
 		return (-1);
 	}
 
+	size_t pos = cbuf_position(cbuf);
+	ssize_t rsz;
 	if ((rsz = read(fd, &cbuf->cbuf_data[pos], want)) < 0) {
 		return (-1);
 	}
@@ -157,22 +166,12 @@ cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 int
 cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 {
-	ssize_t wsz;
-	size_t pos = cbuf_position(cbuf);
-
-	if (want == CBUF_SYSREAD_ENTIRE) {
-		if ((want = cbuf_available(cbuf)) == 0) {
-			errno = ENOSPC;
-			return (-1);
-		}
-	} else if (want == 0) {
-		errno = EINVAL;
-		return (-1);
-	} else if (want > cbuf_available(cbuf)) {
-		errno = ENOSPC;
+	if (cbuf_sys_size_check(cbuf, &want) != 0) {
 		return (-1);
 	}
 
+	size_t pos = cbuf_position(cbuf);
+	ssize_t wsz;
 	if ((wsz = write(fd, &cbuf->cbuf_data[pos], want)) < 0) {
 		return (-1);
 	}
@@ -188,22 +187,12 @@ int
 cbuf_sys_sendto(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
     int flags, const struct sockaddr *to, size_t tolen)
 {
-	ssize_t wsz;
-	size_t pos = cbuf_position(cbuf);
-
-	if (want == CBUF_SYSREAD_ENTIRE) {
-		if ((want = cbuf_available(cbuf)) == 0) {
-			errno = ENOSPC;
-			return (-1);
-		}
-	} else if (want == 0) {
-		errno = EINVAL;
-		return (-1);
-	} else if (want > cbuf_available(cbuf)) {
-		errno = ENOSPC;
+	if (cbuf_sys_size_check(cbuf, &want) != 0) {
 		return (-1);
 	}
 
+	size_t pos = cbuf_position(cbuf);
+	ssize_t wsz;
 	if ((wsz = sendto(fd, &cbuf->cbuf_data[pos], want, flags, to,
 	    tolen)) < 0) {
 		return (-1);
@@ -220,21 +209,12 @@ int
 cbuf_sys_recvfrom(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
     int flags, struct sockaddr *from, size_t *fromlen)
 {
-	if (want == CBUF_SYSREAD_ENTIRE) {
-		if ((want = cbuf_available(cbuf)) == 0) {
-			errno = ENOSPC;
-			return (-1);
-		}
-	} else if (want == 0) {
-		errno = EINVAL;
-		return (-1);
-	} else if (want > cbuf_available(cbuf)) {
-		errno = ENOSPC;
+	if (cbuf_sys_size_check(cbuf, &want) != 0) {
 		return (-1);
 	}
 
-	ssize_t rsz;
 	size_t pos = cbuf_position(cbuf);
+	ssize_t rsz;
 	if ((rsz = recvfrom(fd, &cbuf->cbuf_data[pos], want, flags,
 	    from, fromlen)) < 0) {
 		return (-1);
