@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/socket.h>
 
 /*
  * 0 <= position <= limit <= capacity
@@ -126,6 +127,10 @@ extern int cbuf_get_ptr(cbuf_t *cbuf, size_t offset, size_t length, void **val);
 
 extern int cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
 extern int cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
+extern int cbuf_sys_recvfrom(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
+    int flags, struct sockaddr *from, size_t *fromlen);
+extern int cbuf_sys_sendto(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
+    int flags, const struct sockaddr *to, size_t tolen);
 
 extern size_t cbuf_copy(cbuf_t *, cbuf_t *);
 

@@ -183,6 +183,69 @@ cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 	return (0);
 }
 
+int
+cbuf_sys_sendto(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
+    int flags, const struct sockaddr *to, size_t tolen)
+{
+	ssize_t wsz;
+	size_t pos = cbuf_position(cbuf);
+
+	if (want == CBUF_SYSREAD_ENTIRE) {
+		if ((want = cbuf_available(cbuf)) == 0) {
+			errno = ENOSPC;
+			return (-1);
+		}
+	} else if (want == 0) {
+		errno = EINVAL;
+		return (-1);
+	} else if (want > cbuf_available(cbuf)) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	if ((wsz = sendto(fd, &cbuf->cbuf_data[pos], want, flags, to,
+	    tolen)) < 0) {
+		return (-1);
+	}
+	VERIFY0(cbuf_position_set(cbuf, pos + wsz));
+
+	if (actual != NULL) {
+		*actual = (size_t)wsz;
+	}
+	return (0);
+}
+
+int
+cbuf_sys_recvfrom(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
+    int flags, struct sockaddr *from, size_t *fromlen)
+{
+	if (want == CBUF_SYSREAD_ENTIRE) {
+		if ((want = cbuf_available(cbuf)) == 0) {
+			errno = ENOSPC;
+			return (-1);
+		}
+	} else if (want == 0) {
+		errno = EINVAL;
+		return (-1);
+	} else if (want > cbuf_available(cbuf)) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	ssize_t rsz;
+	size_t pos = cbuf_position(cbuf);
+	if ((rsz = recvfrom(fd, &cbuf->cbuf_data[pos], want, flags,
+	    from, fromlen)) < 0) {
+		return (-1);
+	}
+	VERIFY0(cbuf_position_set(cbuf, pos + rsz));
+
+	if (actual != NULL) {
+		*actual = (size_t)rsz;
+	}
+	return (0);
+}
+
 size_t
 cbuf_capacity(cbuf_t *cbuf)
 {
