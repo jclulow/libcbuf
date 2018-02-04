@@ -149,9 +149,6 @@ cbufq_available(cbufq_t *cbufq)
 int
 cbufq_pullup(cbufq_t *cbufq, size_t min_contig)
 {
-	cbuf_t *cbuf0, *cbuf1;
-	size_t sz, pos0;
-
 	if (min_contig == 0) {
 		return (0);
 	}
@@ -190,7 +187,7 @@ top:
 	VERIFY(!list_is_empty(&cbufq->cbufq_bufs));
 	VERIFY(list_head(&cbufq->cbufq_bufs) != list_tail(&cbufq->cbufq_bufs));
 
-	cbuf0 = list_head(&cbufq->cbufq_bufs);
+	cbuf_t *cbuf0 = list_head(&cbufq->cbufq_bufs);
 	if (min_contig <= cbuf_available(cbuf0)) {
 		/*
 		 * The first buffer is long enough.
@@ -198,14 +195,21 @@ top:
 		return (0);
 	}
 
+	size_t sz;
 	VERIFY0(cbuf_safe_add(&sz, cbuf_available(cbuf0), cbuf_unused(cbuf0)));
 	if (min_contig > sz) {
 		/*
 		 * The first buffer does not even have enough backing store to
 		 * allow for the requested minimum contiguous length.  Extend
 		 * the buffer.
+		 *
+		 * Note that when extending the buffer, we need to account for
+		 * any bytes in the first buffer that are before the position.
 		 */
-		if (cbuf_extend(cbuf0, min_contig - cbuf_position(cbuf0)) != 0) {
+		size_t target;
+		VERIFY0(cbuf_safe_add(&target, min_contig,
+		    cbuf_position(cbuf0)));
+		if (cbuf_extend(cbuf0, target) != 0) {
 			return (-1);
 		}
 	}
@@ -215,10 +219,10 @@ top:
 	 * will be restored after the copying.  Resume putting to the buffer at
 	 * the current limit.
 	 */
-	pos0 = cbuf_position(cbuf0);
+	size_t pos0 = cbuf_position(cbuf0);
 	cbuf_resume(cbuf0);
 
-	cbuf1 = list_next(&cbufq->cbufq_bufs, cbuf0);
+	cbuf_t *cbuf1 = list_next(&cbufq->cbufq_bufs, cbuf0);
 
 	cbuf_copy(cbuf1, cbuf0);
 	if (cbuf_available(cbuf1) == 0) {
