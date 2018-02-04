@@ -123,7 +123,7 @@ extern int cbuf_get_ptr(cbuf_t *cbuf, size_t offset, size_t length, void **val);
 	cbuf_get_ptr(cbuf, offset, sizeof (**valpp), (void **)valpp)
 #endif
 
-#define	CBUF_SYSREAD_ENTIRE		0
+#define	CBUF_SYSREAD_ENTIRE		((size_t)-1ULL)
 
 extern int cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
 extern int cbuf_sys_write(cbuf_t *cbuf, int fd, size_t want, size_t *actual);
