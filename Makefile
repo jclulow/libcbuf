@@ -9,17 +9,26 @@ CFLAGS =		-I$(ROOT)/src \
 			-Wno-unused-function
 EXTRA_CFLAGS =
 
-CBUF_OBJS =		obj/cbuf.o obj/cbufq.o obj/list.o
+CBUF_OBJS =		cbuf.o cbufq.o list.o
 
-libcbuf.a: $(CBUF_OBJS)
+OBJ_DIR =		obj
+DESTDIR =		.
+
+CBUF_ARCHIVE =		$(DESTDIR)/libcbuf.a
+
+$(CBUF_ARCHIVE): $(CBUF_OBJS:%=$(OBJ_DIR)/%)
+	@mkdir -p $(@D)
 	ar rcs $@ $^
 
-obj/%.o: src/%.c | obj
+$(OBJ_DIR)/%.o: src/%.c | $(OBJ_DIR)
 	gcc -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $^
 
-obj/%.o: deps/illumos-list/src/%.c | obj
+$(OBJ_DIR)/%.o: deps/illumos-list/src/%.c | $(OBJ_DIR)
 	gcc -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $^
 
-obj:
+$(OBJ_DIR):
 	mkdir -p $@
 
+clean:
+	rm -f $(CBUF_OBJS:%=$(OBJ_DIR)/%)
+	rm -f $(CBUF_ARCHIVE)
