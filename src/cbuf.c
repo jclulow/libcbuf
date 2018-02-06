@@ -276,6 +276,8 @@ cbuf_limit_set(cbuf_t *cbuf, size_t sz)
 size_t
 cbuf_available(cbuf_t *cbuf)
 {
+	VERIFY3P(cbuf, !=, NULL);
+
 	return (cbuf->cbuf_limit - cbuf->cbuf_position);
 }
 

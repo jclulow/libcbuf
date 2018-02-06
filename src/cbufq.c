@@ -138,6 +138,8 @@ cbufq_available(cbufq_t *cbufq)
 	size_t tots = 0;
 	cbuf_t *cbuf;
 
+	VERIFY3P(cbufq, !=, NULL);
+
 	for (cbuf = list_head(&cbufq->cbufq_bufs); cbuf != NULL;
 	    cbuf = list_next(&cbufq->cbufq_bufs, cbuf)) {
 		VERIFY0(cbuf_safe_add(&tots, tots, cbuf_available(cbuf)));
