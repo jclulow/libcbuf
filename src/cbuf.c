@@ -161,6 +161,30 @@ cbuf_sys_read(cbuf_t *cbuf, int fd, size_t want, size_t *actual)
 }
 
 /*
+ * Use send(2) to consume data from the buffer.
+ */
+int
+cbuf_sys_send(cbuf_t *cbuf, int fd, size_t want, size_t *actual, int flags)
+{
+	if (cbuf_sys_size_check(cbuf, &want) != 0) {
+		return (-1);
+	}
+
+	size_t pos = cbuf_position(cbuf);
+	ssize_t wsz;
+	if ((wsz = send(fd, &cbuf->cbuf_data[pos], want, flags)) < 0) {
+		return (-1);
+	}
+	VERIFY0(cbuf_position_set(cbuf, pos + wsz));
+
+	if (actual != NULL) {
+		*actual = (size_t)wsz;
+	}
+	return (0);
+}
+
+
+/*
  * Use write(2) to consume data from the buffer.
  */
 int

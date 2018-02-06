@@ -131,6 +131,8 @@ extern int cbuf_sys_recvfrom(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
     int flags, struct sockaddr *from, size_t *fromlen);
 extern int cbuf_sys_sendto(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
     int flags, const struct sockaddr *to, size_t tolen);
+extern int cbuf_sys_send(cbuf_t *cbuf, int fd, size_t want, size_t *actual,
+    int flags);
 
 extern size_t cbuf_copy(cbuf_t *, cbuf_t *);
 
