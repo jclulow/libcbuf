@@ -275,6 +275,19 @@ cbuf_position_set(cbuf_t *cbuf, size_t sz)
 	return (0);
 }
 
+int
+cbuf_skip(cbuf_t *cbuf, size_t skip_bytes)
+{
+	if (skip_bytes > cbuf_available(cbuf)) {
+		errno = ENOSPC;
+		return (-1);
+	}
+
+	VERIFY0(cbuf_safe_add(&cbuf->cbuf_position, cbuf->cbuf_position,
+	    skip_bytes));
+	return (0);
+}
+
 size_t
 cbuf_limit(cbuf_t *cbuf)
 {

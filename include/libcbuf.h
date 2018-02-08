@@ -56,6 +56,8 @@ extern int cbuf_limit_set(cbuf_t *cbuf, size_t new_limit);
 extern size_t cbuf_position(cbuf_t *cbuf);
 extern int cbuf_position_set(cbuf_t *cbuf, size_t new_position);
 
+extern int cbuf_skip(cbuf_t *cbuf, size_t skip_bytes);
+
 /*
  * Make the buffer ready for puts; sets the limit to the capacity and the
  * position to 0.
