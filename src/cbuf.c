@@ -303,7 +303,10 @@ cbuf_limit_set(cbuf_t *cbuf, size_t sz)
 	}
 
 	cbuf->cbuf_limit = sz;
-	if (cbuf->cbuf_limit > cbuf->cbuf_position) {
+	if (cbuf->cbuf_limit < cbuf->cbuf_position) {
+		/*
+		 * Ensure that the position fits within the new limit.
+		 */
 		cbuf->cbuf_position = cbuf->cbuf_limit;
 	}
 
