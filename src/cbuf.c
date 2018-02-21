@@ -1,16 +1,4 @@
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/debug.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-#include <unistd.h>
-#include <endian.h>
-
 #include "libcbuf_impl.h"
 #include "libcbuf.h"
 
@@ -425,7 +413,8 @@ cbuf_put_u8(cbuf_t *cbuf, uint8_t val)
 int
 cbuf_put_u16(cbuf_t *cbuf, uint16_t val)
 {
-	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htons(val) : val;
+	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htobe16(val) :
+	     htole16(val);
 
 	CBUF_APPEND_COMMON(cbuf, val);
 }
@@ -433,7 +422,8 @@ cbuf_put_u16(cbuf_t *cbuf, uint16_t val)
 int
 cbuf_put_u32(cbuf_t *cbuf, uint32_t val)
 {
-	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htonl(val) : val;
+	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htobe32(val) :
+	    htole32(val);
 
 	CBUF_APPEND_COMMON(cbuf, val);
 }
@@ -441,7 +431,8 @@ cbuf_put_u32(cbuf_t *cbuf, uint32_t val)
 int
 cbuf_put_u64(cbuf_t *cbuf, uint64_t val)
 {
-	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htonll(val) : val;
+	val = (cbuf->cbuf_order == CBUF_ORDER_BIG_ENDIAN) ? htobe64(val) :
+	    htole64(val);
 
 	CBUF_APPEND_COMMON(cbuf, val);
 }

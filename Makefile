@@ -5,8 +5,7 @@ CFLAGS =		-I$(ROOT)/src \
 			-I$(ROOT)/include \
 			-std=gnu99 -g \
 			-Wall -Wextra -Werror \
-			-Wno-unused-parameter \
-			-Wno-unused-function
+			-Wno-unused-parameter
 EXTRA_CFLAGS =
 
 CBUF_OBJS =		cbuf.o cbufq.o list.o

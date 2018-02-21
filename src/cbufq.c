@@ -1,14 +1,4 @@
 
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/debug.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <inttypes.h>
-
 #include "libcbuf_impl.h"
 #include "libcbuf.h"
 
@@ -77,7 +67,7 @@ cbufq_enq(cbufq_t *cbufq, cbuf_t *cbuf)
 }
 
 static cbuf_t *
-cbufq_deq_common(cbufq_t *cbufq, int remove)
+cbufq_deq_common(cbufq_t *cbufq, bool remove)
 {
 	cbuf_t *head;
 
@@ -105,13 +95,13 @@ cbufq_deq_common(cbufq_t *cbufq, int remove)
 cbuf_t *
 cbufq_deq(cbufq_t *cbufq)
 {
-	return (cbufq_deq_common(cbufq, 1));
+	return (cbufq_deq_common(cbufq, true));
 }
 
 cbuf_t *
 cbufq_peek(cbufq_t *cbufq)
 {
-	return (cbufq_deq_common(cbufq, 0));
+	return (cbufq_deq_common(cbufq, false));
 }
 
 cbuf_t *
@@ -162,7 +152,7 @@ top:
 	if (cbufq->cbufq_count == 0) {
 		VERIFY(list_is_empty(&cbufq->cbufq_bufs));
 
-		errno = EIO;
+		errno = ENODATA;
 		return (-1);
 	}
 
@@ -176,7 +166,7 @@ top:
 
 		if (min_contig > cbuf_available(list_head(
 		    &cbufq->cbufq_bufs))) {
-			errno = EIO;
+			errno = ENODATA;
 			return (-1);
 		}
 
