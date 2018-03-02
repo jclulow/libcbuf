@@ -9,8 +9,42 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include <endian.h>
 #include "sys/list.h"
+
+#ifdef	LIBCBUF_NO_ENDIAN_H
+/*
+ * Check to make sure this is a little-endian system.
+ */
+#ifndef	_LITTLE_ENDIAN
+#error "without endian.h this library only works on little endian machines"
+#endif
+
+/*
+ * Define fallback macros for the endian(3C) functions we need.
+ */
+#define	htobe16(val)		htons(val)
+#define	htobe32(val)		htonl(val)
+#define	htobe64(val)		htonll(val)
+
+#define	be16toh(val)		ntohs(val)
+#define	be32toh(val)		ntohl(val)
+#define	be64toh(val)		ntohll(val)
+
+#define	htole16(val)		(val)
+#define	htole32(val)		(val)
+#define	htole64(val)		(val)
+
+#define	le16toh(val)		(val)
+#define	le32toh(val)		(val)
+#define	le64toh(val)		(val)
+
+#else
+/*
+ * On a recent enough system, we can use the system-provided endian(3C) suite
+ * of functions.
+ */
+#include <endian.h>
+#endif
 
 #include "libcbuf.h"
 
