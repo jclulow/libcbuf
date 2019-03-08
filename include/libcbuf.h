@@ -103,6 +103,7 @@ extern int cbuf_get_u16(cbuf_t *cbuf, uint16_t *val);
 extern int cbuf_get_u32(cbuf_t *cbuf, uint32_t *val);
 extern int cbuf_get_u64(cbuf_t *cbuf, uint64_t *val);
 
+extern int cbuf_put_char(cbuf_t *cbuf, char val);
 extern int cbuf_put_u8(cbuf_t *cbuf, uint8_t val);
 extern int cbuf_put_u16(cbuf_t *cbuf, uint16_t val);
 extern int cbuf_put_u32(cbuf_t *cbuf, uint32_t val);

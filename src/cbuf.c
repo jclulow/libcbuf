@@ -405,6 +405,12 @@ cbuf_copy(cbuf_t *cbuf_from, cbuf_t *cbuf_to)
 	} while (0)
 
 int
+cbuf_put_char(cbuf_t *cbuf, char val)
+{
+	CBUF_APPEND_COMMON(cbuf, val);
+}
+
+int
 cbuf_put_u8(cbuf_t *cbuf, uint8_t val)
 {
 	CBUF_APPEND_COMMON(cbuf, val);
