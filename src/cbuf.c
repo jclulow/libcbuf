@@ -491,11 +491,11 @@ cbuf_dump(cbuf_t *cbuf, FILE *fp)
 {
 	unsigned per_row = 8;
 
-	fprintf(fp, "cbuf[%p]: pos %8lu lim %8lu cap %8lu\n",
+	fprintf(fp, "cbuf[%p]: pos %8zu lim %8zu cap %8zu\n",
 	    cbuf, cbuf->cbuf_position, cbuf->cbuf_limit, cbuf->cbuf_capacity);
 
 	for (size_t i = 0; i < cbuf->cbuf_limit; i += per_row) {
-		fprintf(fp, "    %04lx: ", i);
+		fprintf(fp, "    %04zx: ", i);
 		for (unsigned x = 0; x < per_row; x++) {
 			if (i + x >= cbuf->cbuf_limit) {
 				break;
