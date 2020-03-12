@@ -236,7 +236,7 @@ cbufq_dump(cbufq_t *cbufq, FILE *fp)
 {
 	unsigned i = 0;
 
-	fprintf(fp, "cbufq[%p]: count %8u\n", cbufq, cbufq->cbufq_count);
+	fprintf(fp, "cbufq[%p]: count %8zu\n", cbufq, cbufq->cbufq_count);
 	for (cbuf_t *cbuf = list_head(&cbufq->cbufq_bufs); cbuf != NULL;
 	    cbuf = list_next(&cbufq->cbufq_bufs, cbuf)) {
 		fprintf(fp, "--- entry %8u ---\n", i++);
